@@ -6,6 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/karlseguin/ccache"
 	"io"
 	"net/http"
 	_ "net/http/pprof"
@@ -366,6 +367,7 @@ func (r *Runner) RunEnumeration() error {
 		Colorizer:       r.colorizer,
 		ResumeCfg:       r.resumeCfg,
 		ExcludeMatchers: excludematchers.New(r.options.ExcludeMatchers),
+		Interactions:    ccache.New(ccache.Configure()),
 	}
 	engine := core.New(r.options)
 	engine.SetExecuterOptions(executerOpts)

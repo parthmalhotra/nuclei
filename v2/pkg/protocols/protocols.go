@@ -5,6 +5,7 @@ import (
 
 	"github.com/logrusorgru/aurora"
 
+	"github.com/karlseguin/ccache"
 	"github.com/projectdiscovery/nuclei/v2/pkg/catalog"
 	"github.com/projectdiscovery/nuclei/v2/pkg/model"
 	"github.com/projectdiscovery/nuclei/v2/pkg/operators"
@@ -76,6 +77,7 @@ type ExecuterOptions struct {
 	Colorizer      aurora.Aurora
 	WorkflowLoader model.WorkflowLoader
 	ResumeCfg      *types.ResumeCfg
+	Interactions   *ccache.Cache
 }
 
 // Copy returns a copy of the executeroptions structure

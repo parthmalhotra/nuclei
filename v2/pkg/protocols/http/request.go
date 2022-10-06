@@ -271,7 +271,7 @@ func (request *Request) ExecuteWithResults(input *contextargs.Context, dynamicVa
 			if len(interactURLs) > 0 {
 				generatedHttpRequest.interactshURLs = append(generatedHttpRequest.interactshURLs, interactURLs...)
 			}
-			hasInteractMarkers := interactsh.HasMarkers(data) || len(generatedHttpRequest.interactshURLs) > 0
+			//hasInteractMarkers := interactsh.HasMarkers(data) || len(generatedHttpRequest.interactshURLs) > 0
 			if input.Input == "" {
 				input.Input = generatedHttpRequest.URL()
 			}
@@ -286,15 +286,18 @@ func (request *Request) ExecuteWithResults(input *contextargs.Context, dynamicVa
 					gotMatches = event.OperatorsResult.Matched
 					gotDynamicValues = generators.MergeMapsMany(event.OperatorsResult.DynamicValues, dynamicValues, gotDynamicValues)
 				}
-				if hasInteractMarkers && hasInteractMatchers && request.options.Interactsh != nil {
-					request.options.Interactsh.RequestEvent(generatedHttpRequest.interactshURLs, &interactsh.RequestData{
-						MakeResultFunc: request.MakeResultEvent,
-						Event:          event,
-						Operators:      request.CompiledOperators,
-						MatchFunc:      request.Match,
-						ExtractFunc:    request.Extract,
-					})
-				} else {
+				//if hasInteractMarkers && hasInteractMatchers && request.options.Interactsh != nil {
+				//request.options.Interactsh.RequestEvent(generatedHttpRequest.interactshURLs, &interactsh.RequestData{
+				//	MakeResultFunc: request.MakeResultEvent,
+				//	Event:          event,
+				//	Operators:      request.CompiledOperators,
+				//	MatchFunc:      request.Match,
+				//	ExtractFunc:    request.Extract,
+				//})
+				//}
+				id := strings.ToLower(strings.TrimSpace(event.InternalEvent["template-id"].(string)))
+				if item := request.options.Interactions.Get(id); item == nil {
+					request.options.Interactions.Set(id, struct{}{}, 60*time.Second)
 					callback(event)
 				}
 			}, generator.currentIndex)
