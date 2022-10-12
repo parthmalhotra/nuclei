@@ -6,19 +6,18 @@ import (
 	"bufio"
 	"io"
 	"os"
-	"strconv"
 	"strings"
 	"time"
 
 	"github.com/pkg/errors"
 
-	asnmap "github.com/projectdiscovery/asnmap/libs"
 	"github.com/projectdiscovery/filekv"
 	"github.com/projectdiscovery/fileutil"
 	"github.com/projectdiscovery/gologger"
 	"github.com/projectdiscovery/hmap/store/hybrid"
 	"github.com/projectdiscovery/iputil"
 	"github.com/projectdiscovery/mapcidr"
+	asn "github.com/projectdiscovery/mapcidr/asn"
 	"github.com/projectdiscovery/nuclei/v2/pkg/types"
 )
 
@@ -77,7 +76,7 @@ func (i *Input) initializeInputSources(options *types.Options) error {
 			i.expandCIDRInputValue(target)
 			continue
 		}
-		if isASN(target) {
+		if asn.IsASN(target) {
 			i.expandASNInputValue(target)
 			continue
 		}
@@ -110,7 +109,7 @@ func (i *Input) scanInputFromReader(reader io.Reader) {
 			i.expandCIDRInputValue(scanner.Text())
 			continue
 		}
-		if isASN(scanner.Text()) {
+		if asn.IsASN(scanner.Text()) {
 			i.expandASNInputValue(scanner.Text())
 			continue
 		}
@@ -172,29 +171,11 @@ func (i *Input) expandCIDRInputValue(value string) {
 	}
 }
 
-// expandASNInputValue expands CIDR and stores expanded IPs
+// expandASNInputValue expands CIDRs for given ASN and stores expanded IPs
 func (i *Input) expandASNInputValue(value string) {
-	client := asnmap.NewClient()
-	ASN := asnmap.ASN(value[2:]) // drop AS from the value
-	//get cidrs from ASN number
-	cidrs := asnmap.GetCIDR(client.GetData(ASN))
+	asnClient := asn.New()
+	cidrs, _ := asnClient.GetCIDRsForASNNum(value)
 	for _, cidr := range cidrs {
-		// skip for IPv6 CIDRs
-		if strings.Count(cidr.String(), ":") >= 2 {
-			continue
-		}
 		i.expandCIDRInputValue(cidr.String())
 	}
-}
-
-/*
-isASN checks if the given input is ASN or not,
-its possible to have an domain name starting with AS/as prefix.
-*/
-func isASN(value string) bool {
-	if strings.HasPrefix(strings.ToUpper(value), "AS") {
-		_, err := strconv.Atoi(value[2:])
-		return err == nil
-	}
-	return false
 }
